@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Bautista")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.1.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.1+84547536d691f1caacab4e412bb8338d8bc824aa")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.1+5e53c404ea9d0038052774920c53dff80d2827ab")]
 [assembly: System.Reflection.AssemblyProductAttribute("UcseCLI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("UcseCLI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.1.0")]

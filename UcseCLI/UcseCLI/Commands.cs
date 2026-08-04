@@ -29,7 +29,7 @@ public static class Commands
         return command;
     }
 
-    public static Command AddFilesCommand()
+    public static Command NewFilesCommand()
     {
         var command = new Command(
             "add-files",
@@ -63,5 +63,31 @@ public static class Commands
 
         return command;
     }
-    
+
+    public static Command NewWebApiCommand()
+    {
+        var command = new Command(
+            "new-webapi",
+            "Crear solución con un proyecto Web API de ejemplo"
+        );
+
+        var nameArgument =
+            new Argument<string>("name");
+
+        command.Arguments.Add(nameArgument);
+
+        command.SetAction(result =>
+        {
+            var name =
+                result.GetValue(nameArgument);
+
+            ProjectGenerator.CreateWebApiSolution(
+                name!
+            );
+
+            return 0;
+        });
+
+        return command;
+    }
 }

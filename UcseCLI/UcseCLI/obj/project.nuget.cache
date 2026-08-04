@@ -1,12 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "0xqcDyPXl+g=",
+  "dgSpecHash": "9t2nXCzSfGY=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Bautista\\Desktop\\UcseCLI\\UcseCLI\\UcseCLI\\UcseCLI\\UcseCLI.csproj",
+  "projectFilePath": "C:\\Users\\UCSE\\Desktop\\UcseCLI\\UcseCLI\\UcseCLI\\UcseCLI.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\Bautista\\.nuget\\packages\\spectre.console\\0.55.2\\spectre.console.0.55.2.nupkg.sha512",
-    "C:\\Users\\Bautista\\.nuget\\packages\\spectre.console.ansi\\0.55.2\\spectre.console.ansi.0.55.2.nupkg.sha512",
-    "C:\\Users\\Bautista\\.nuget\\packages\\system.commandline\\3.0.0-preview.4.26230.115\\system.commandline.3.0.0-preview.4.26230.115.nupkg.sha512"
+    "C:\\Users\\UCSE\\.nuget\\packages\\spectre.console\\0.55.2\\spectre.console.0.55.2.nupkg.sha512",
+    "C:\\Users\\UCSE\\.nuget\\packages\\spectre.console.ansi\\0.55.2\\spectre.console.ansi.0.55.2.nupkg.sha512",
+    "C:\\Users\\UCSE\\.nuget\\packages\\system.commandline\\3.0.0-preview.4.26230.115\\system.commandline.3.0.0-preview.4.26230.115.nupkg.sha512"
   ],
   "logs": []
 }

@@ -9,7 +9,11 @@ rootCommand.Subcommands.Add(
 );
 
 rootCommand.Subcommands.Add(
-    Commands.AddFilesCommand()
+    Commands.NewFilesCommand()
+);
+
+rootCommand.Subcommands.Add(
+    Commands.NewWebApiCommand()
 );
 
 return rootCommand.Parse(args).Invoke();

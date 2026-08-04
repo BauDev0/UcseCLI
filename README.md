@@ -12,6 +12,7 @@ Su objetivo es reducir el tiempo invertido en tareas repetitivas para que los es
 * Creación de proyectos de lógica (`Class Library`).
 * Creación de proyectos de pruebas con NUnit.
 * Generación automática de archivos `.cs`.
+* Creación de soluciones con proyectos Web API de ejemplo.
 * Configuración automática de referencias entre proyectos.
 * Distribución mediante NuGet Tool.
 
