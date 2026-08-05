@@ -187,23 +187,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\UCSE\\.nuget\\packages\\": {},
+    "C:\\Users\\Bautista\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.1",
     "restore": {
-      "projectUniqueName": "C:\\Users\\UCSE\\Desktop\\UcseCLI\\UcseCLI\\UcseCLI\\UcseCLI.csproj",
+      "projectUniqueName": "C:\\Users\\Bautista\\Desktop\\UcseCLI\\UcseCLI\\UcseCLI\\UcseCLI.csproj",
       "projectName": "UcseCLI",
-      "projectPath": "C:\\Users\\UCSE\\Desktop\\UcseCLI\\UcseCLI\\UcseCLI\\UcseCLI.csproj",
-      "packagesPath": "C:\\Users\\UCSE\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\UCSE\\Desktop\\UcseCLI\\UcseCLI\\UcseCLI\\obj\\",
+      "projectPath": "C:\\Users\\Bautista\\Desktop\\UcseCLI\\UcseCLI\\UcseCLI\\UcseCLI.csproj",
+      "packagesPath": "C:\\Users\\Bautista\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Bautista\\Desktop\\UcseCLI\\UcseCLI\\UcseCLI\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\UCSE\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Bautista\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -212,6 +212,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -261,7 +262,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.200/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.204/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",

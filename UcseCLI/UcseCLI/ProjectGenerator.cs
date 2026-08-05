@@ -113,10 +113,12 @@ public static class ProjectGenerator
         var logicPath = Path.Combine(root, $"{projectName}.LogicaServicio");
         var appProgram = Path.Combine(apiPath, "Program.cs");
         var controllerPath = Path.Combine(apiPath, "Controllers");
+        var dtoFolder = Path.Combine(apiPath, "DTOs");
         var serviceFolder = Path.Combine(logicPath, "Servicios");
         var entityFolder = Path.Combine(logicPath, "Entidades");
 
         Directory.CreateDirectory(controllerPath);
+        Directory.CreateDirectory(dtoFolder);
         Directory.CreateDirectory(serviceFolder);
         Directory.CreateDirectory(entityFolder);
 
@@ -126,11 +128,27 @@ $"using System.Collections.Generic;\nusing System.Linq;\nusing {projectName}.Log
 
         var entityFile = Path.Combine(entityFolder, "Producto.cs");
         File.WriteAllText(entityFile,
-$"using System.ComponentModel.DataAnnotations;\n\nnamespace {projectName}.LogicaServicio.Entidades;\n\npublic class Producto\n{{\n    public int Id {{ get; set; }}\n\n    [Required(ErrorMessage = \"El nombre es obligatorio\")]\n    [StringLength(100, MinimumLength = 2)]\n    public string Nombre {{ get; set; }} = null!;\n\n    [Range(0.01, 1000000, ErrorMessage = \"El precio debe ser mayor a 0\")]\n    public decimal Precio {{ get; set; }}\n\n    [Required(ErrorMessage = \"La categoría es obligatoria\")]\n    public string Categoria {{ get; set; }} = null!;\n}}\n");
+$"namespace {projectName}.LogicaServicio.Entidades;\n\npublic class Producto\n{{\n    public int Id {{ get; set; }}\n\n    public string Nombre {{ get; set; }} = null!;\n\n    public decimal Precio {{ get; set; }}\n\n    public string Categoria {{ get; set; }} = null!;\n}}\n");
+
+        var requestFile = Path.Combine(dtoFolder, "ProductoRequest.cs");
+        File.WriteAllText(requestFile,
+$"using System.ComponentModel.DataAnnotations;\n\nnamespace {projectName}.Api.DTOs;\n\npublic class ProductoRequest\n{{\n    [Required(ErrorMessage = \"El nombre es obligatorio\")]\n    [StringLength(100, MinimumLength = 2)]\n    public string Nombre {{ get; set; }} = null!;\n\n    [Range(0.01, 1000000, ErrorMessage = \"El precio debe ser mayor a 0\")]\n    public decimal Precio {{ get; set; }}\n\n    [Required(ErrorMessage = \"La categoría es obligatoria\")]\n    public string Categoria {{ get; set; }} = null!;\n}}\n");
+
+        var responseFile = Path.Combine(dtoFolder, "ProductoResponse.cs");
+        File.WriteAllText(responseFile,
+$"namespace {projectName}.Api.DTOs;\n\npublic class ProductoResponse\n{{\n    public int Id {{ get; set; }}\n\n    public string Nombre {{ get; set; }} = null!;\n\n    public decimal Precio {{ get; set; }}\n\n    public string Categoria {{ get; set; }} = null!;\n}}\n");
+
+        var mapperFile = Path.Combine(dtoFolder, "ProductoMapper.cs");
+        File.WriteAllText(mapperFile,
+$"using {projectName}.LogicaServicio.Entidades;\n\nnamespace {projectName}.Api.DTOs;\n\npublic static class ProductoMapper\n{{\n    public static ProductoResponse AProductoResponse(this Producto producto) => new()\n    {{\n        Id = producto.Id,\n        Nombre = producto.Nombre,\n        Precio = producto.Precio,\n        Categoria = producto.Categoria\n    }};\n\n    public static Producto AProducto(this ProductoRequest request) => new()\n    {{\n        Nombre = request.Nombre,\n        Precio = request.Precio,\n        Categoria = request.Categoria\n    }};\n}}\n");
 
         var controllerFile = Path.Combine(controllerPath, "ProductoController.cs");
         File.WriteAllText(controllerFile,
-$"using Microsoft.AspNetCore.Mvc;\nusing {projectName}.LogicaServicio.Entidades;\nusing {projectName}.LogicaServicio.Servicios;\n\nnamespace {projectName}.Api.Controllers;\n\n[ApiController]\n[Route(\"api/[controller]\")]\npublic class ProductoController : ControllerBase\n{{\n    private readonly ProductoService _servicio;\n\n    public ProductoController(ProductoService servicio)\n    {{\n        _servicio = servicio;\n    }}\n\n    [HttpGet]\n    public IActionResult ObtenerTodos() => Ok(_servicio.ObtenerTodos());\n\n    [HttpGet(\"{{id}}\")]\n    public IActionResult ObtenerPorId(int id)\n    {{\n        var producto = _servicio.ObtenerPorId(id);\n        if (producto == null)\n            return NotFound();\n\n        return Ok(producto);\n    }}\n\n    [HttpPost]\n    public IActionResult Crear([FromBody] Producto producto)\n    {{\n        _servicio.Agregar(producto);\n        return CreatedAtAction(nameof(ObtenerPorId), new {{ id = producto.Id }}, producto);\n    }}\n\n    [HttpPut(\"{{id}}\")]\n    public IActionResult Actualizar(int id, [FromBody] Producto producto)\n    {{\n        if (!_servicio.Actualizar(id, producto))\n            return NotFound();\n\n        return Ok(producto);\n    }}\n\n    [HttpDelete(\"{{id}}\")]\n    public IActionResult Eliminar(int id)\n    {{\n        if (!_servicio.Eliminar(id))\n            return NotFound();\n\n        return NoContent();\n    }}\n}}\n");
+$"using System.Linq;\nusing Microsoft.AspNetCore.Mvc;\nusing {projectName}.Api.DTOs;\nusing {projectName}.LogicaServicio.Servicios;\n\nnamespace {projectName}.Api.Controllers;\n\n[ApiController]\n[Route(\"api/[controller]\")]\npublic class ProductoController : ControllerBase\n{{\n    private readonly ProductoService _servicio;\n\n    public ProductoController(ProductoService servicio)\n    {{\n        _servicio = servicio;\n    }}\n\n    [HttpGet]\n    public IActionResult ObtenerTodos() => Ok(_servicio.ObtenerTodos().Select(p => p.AProductoResponse()));\n\n    [HttpGet(\"{{id}}\")]\n    public IActionResult ObtenerPorId(int id)\n    {{\n        var producto = _servicio.ObtenerPorId(id);\n        if (producto == null)\n            return NotFound();\n\n        return Ok(producto.AProductoResponse());\n    }}\n\n    [HttpPost]\n    public IActionResult Crear([FromBody] ProductoRequest request)\n    {{\n        var producto = request.AProducto();\n        _servicio.Agregar(producto);\n        return StatusCode(201, producto.AProductoResponse());\n    }}\n\n    [HttpPut(\"{{id}}\")]\n    public IActionResult Actualizar(int id, [FromBody] ProductoRequest request)\n    {{\n        var producto = request.AProducto();\n        producto.Id = id;\n\n        if (!_servicio.Actualizar(id, producto))\n            return NotFound();\n\n        return Ok(producto.AProductoResponse());\n    }}\n\n    [HttpDelete(\"{{id}}\")]\n    public IActionResult Eliminar(int id)\n    {{\n        if (!_servicio.Eliminar(id))\n            return NotFound();\n\n        return NoContent();\n    }}\n}}\n");
+
+        var ejemploFile = Path.Combine(apiPath, "APIEjemplo.cs");
+        File.WriteAllText(ejemploFile,
+$"using System;\nusing System.Collections.Generic;\nusing System.Linq;\nusing Microsoft.AspNetCore.Mvc;\n\nnamespace {projectName}.Api;\n\n[ApiController]\n[Route(\"[controller]\")]\npublic class WeatherForecastController : ControllerBase\n{{\n    private static readonly string[] Summaries = new[]\n    {{\n        \"Freezing\", \"Bracing\", \"Chilly\", \"Cool\", \"Mild\",\n        \"Warm\", \"Balmy\", \"Hot\", \"Sweltering\", \"Scorching\"\n    }};\n\n    [HttpGet(Name = \"GetWeatherForecast\")]\n    public IEnumerable<WeatherForecast> Get()\n    {{\n        return Enumerable.Range(1, 5).Select(index => new WeatherForecast\n        {{\n            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),\n            TemperatureC = Random.Shared.Next(-20, 55),\n            Summary = Summaries[Random.Shared.Next(Summaries.Length)]\n        }}).ToArray();\n    }}\n}}\n\npublic class WeatherForecast\n{{\n    public DateOnly Date {{ get; set; }}\n\n    public int TemperatureC {{ get; set; }}\n\n    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);\n\n    public string? Summary {{ get; set; }}\n}}\n");
 
         if (File.Exists(Path.Combine(apiPath, "WeatherForecast.cs")))
         {

@@ -84,6 +84,56 @@ La herramienta realiza automáticamente:
 
 ---
 
+## Crear una Solución Web API
+
+### Comando
+
+```bash
+ucse new-webapi SistemaVentas
+```
+
+### Resultado
+
+```text
+SistemaVentas
+│
+├── SistemaVentas.Api
+│   ├── Controllers
+│   │   └── ProductoController.cs
+│   ├── DTOs
+│   │   ├── ProductoRequest.cs
+│   │   ├── ProductoResponse.cs
+│   │   └── ProductoMapper.cs
+│   ├── appsettings.json
+│   └── Program.cs
+│
+├── SistemaVentas.LogicaServicio
+│   ├── Entidades
+│   │   └── Producto.cs
+│   └── Servicios
+│       └── ProductoService.cs
+│
+├── SistemaVentas.LogicaTest
+│
+└── SolucionGeneral.slnx
+```
+
+### Configuración Automática
+
+La herramienta realiza automáticamente:
+
+* Creación del proyecto Web API.
+* Creación del proyecto de lógica.
+* Creación del proyecto de pruebas NUnit.
+* Creación de la solución `.slnx`.
+* Inclusión de los proyectos dentro de la solución.
+* Referencia del proyecto de API hacia el proyecto de lógica.
+* Referencia del proyecto de pruebas hacia el proyecto de lógica.
+* Generación de DTOs, mapper y controller de ejemplo.
+* Registro del servicio en `Program.cs`.
+
+---
+
 ## Crear Múltiples Clases
 
 ### Comando
