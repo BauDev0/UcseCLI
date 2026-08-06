@@ -228,8 +228,7 @@ SistemaBiblioteca
 
 Próximas funcionalidades:
 
-- [ ] Soporte para xUnit.
-- [ ] Soporte para MSTest.
+- [x] Integración con Web-API
 - [ ] Generación de interfaces.
 - [ ] Generación de clases abstractas.
 - [ ] Arquitecturas multicapa.
