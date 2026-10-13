@@ -27,7 +27,66 @@ jobs:
       - name: Empaquetar la herramienta
         run: dotnet pack UcseCLI/UcseCLI/UcseCLI.csproj --configuration Release --no-build
 
-      - name: Verificar los comandos
+      - name: Instalar la herramienta
         run: |
-          dotnet run --project UcseCLI/UcseCLI/UcseCLI.csproj --configuration Release --no-build -- --help
-          dotnet run --project UcseCLI/UcseCLI/UcseCLI.csproj --configuration Release --no-build -- ejemplos
+          dotnet tool install --global --add-source UcseCLI/UcseCLI/nupkg UcseCLI
+          echo "$HOME/.dotnet/tools" >> "$GITHUB_PATH"
+
+      - name: Verificar la ayuda y los ejemplos
+        run: |
+          ucse --help
+          ucse ejemplos
+          ucse ejemplos nunit
+
+      # Lo que genera la herramienta tiene que compilar y tener los tests en verde.
+      - name: Solución por capas (consola + lógica + tests)
+        working-directory: ${{ runner.temp }}
+        run: |
+          ucse new DemoVentas --sin-git
+          cd DemoVentas
+          dotnet build
+          dotnet test
+
+      - name: Agregar archivos a la solución generada
+        working-directory: ${{ runner.temp }}/DemoVentas
+        run: |
+          ucse add-entidad DemoVentas.LogicaServicio/Entidades Cliente
+          ucse add-enum DemoVentas.LogicaServicio/Entidades EstadoPedido
+          ucse add-interfaz DemoVentas.LogicaServicio/Servicios Notificador
+          ucse add-abstracta DemoVentas.LogicaServicio/Entidades Documento
+          ucse add-repositorio DemoVentas.LogicaServicio/Datos Cliente
+          ucse add-servicio DemoVentas.LogicaServicio/Servicios Cliente
+          ucse add-test DemoVentas.LogicaTest ClienteService
+          ucse add-clase DemoVentas.LogicaServicio Ayudante
+          dotnet build
+          dotnet test
+
+      - name: Sumar la Web API a la solución generada
+        working-directory: ${{ runner.temp }}/DemoVentas
+        run: |
+          ucse add-api --entidad Cliente
+          ucse add-controller DemoVentas.Api Producto
+          dotnet build
+
+      - name: Solución con Web API desde cero
+        working-directory: ${{ runner.temp }}
+        run: |
+          ucse new-webapi DemoApi --entidad Ticket --con-consola --sin-git
+          cd DemoApi
+          dotnet build
+          dotnet test
+
+      - name: Estructura sin código de ejemplo
+        working-directory: ${{ runner.temp }}
+        run: |
+          ucse new DemoVacia --sin-ejemplos --con-api --sin-git
+          cd DemoVacia
+          dotnet build
+
+      - name: Frontend de ejemplo
+        working-directory: ${{ runner.temp }}/DemoApi
+        run: |
+          ucse new-frontend Frontend --entidad Ticket
+          test -f Frontend/index.html
+          test -f Frontend/app.js
+          test -f Frontend/styles.css
