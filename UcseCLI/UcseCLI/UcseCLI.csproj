@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,8 +9,18 @@
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>ucse</ToolCommandName>
     <PackageId>UcseCLI</PackageId>
-    <Version>1.0.1</Version>
+    <Version>2.0.0</Version>
     <Authors>Bautista</Authors>
+    <Description>
+      Herramienta de línea de comandos que automatiza el armado de proyectos de
+      Programación 1 (UCSE): soluciones por capas, Web API, frontend y archivos
+      .cs con código de ejemplo para adaptar.
+    </Description>
+    <PackageTags>ucse;programacion1;dotnet;cli;scaffolding;nunit;webapi</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/BauDev0/UcseCLI</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <PackageOutputPath>./nupkg</PackageOutputPath>
   </PropertyGroup>
 
@@ -18,6 +28,10 @@
     <PackageReference Include="Spectre.Console" Version="0.55.2" />
     <PackageReference Include="System.CommandLine" Version="3.0.0-preview.4.26230.115" />
   </ItemGroup>
-  
+
+  <ItemGroup>
+    <!-- README del repositorio, usado como portada del paquete en NuGet. -->
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
 </Project>
