@@ -1,19 +1,4 @@
-﻿using System.CommandLine;
+using UcseCLI.Cli;
 
-var rootCommand = new RootCommand(
-    "UCSE CLI - Generador de proyectos"
-);
-
-rootCommand.Subcommands.Add(
-    Commands.NewProjectCommand()
-);
-
-rootCommand.Subcommands.Add(
-    Commands.NewFilesCommand()
-);
-
-rootCommand.Subcommands.Add(
-    Commands.NewWebApiCommand()
-);
-
-return rootCommand.Parse(args).Invoke();
+// Punto de entrada: se arma el árbol de comandos y se ejecuta el que pidió el usuario.
+return Comandos.CrearRaiz().Parse(args).Invoke();

@@ -1,0 +1,33 @@
+name: build
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restaurar dependencias
+        run: dotnet restore UcseCLI/UcseCLI/UcseCLI.csproj
+
+      - name: Compilar
+        run: dotnet build UcseCLI/UcseCLI/UcseCLI.csproj --configuration Release --no-restore
+
+      - name: Empaquetar la herramienta
+        run: dotnet pack UcseCLI/UcseCLI/UcseCLI.csproj --configuration Release --no-build
+
+      - name: Verificar los comandos
+        run: |
+          dotnet run --project UcseCLI/UcseCLI/UcseCLI.csproj --configuration Release --no-build -- --help
+          dotnet run --project UcseCLI/UcseCLI/UcseCLI.csproj --configuration Release --no-build -- ejemplos
