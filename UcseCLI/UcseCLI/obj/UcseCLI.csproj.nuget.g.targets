@@ -1,6 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
-    <Import Project="$(NuGetPackageRoot)system.commandline\3.0.0-preview.4.26230.115\buildTransitive\System.CommandLine.targets" Condition="Exists('$(NuGetPackageRoot)system.commandline\3.0.0-preview.4.26230.115\buildTransitive\System.CommandLine.targets')" />
-  </ImportGroup>
-</Project>
