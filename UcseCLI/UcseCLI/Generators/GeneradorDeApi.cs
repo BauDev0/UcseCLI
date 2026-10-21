@@ -9,7 +9,11 @@ namespace UcseCLI.Generators;
 /// </summary>
 public static class GeneradorDeApi
 {
-    public static int Agregar(string? entidadPedida, string? framework, string? logicaManual)
+    public static int Agregar(
+        string? entidadPedida,
+        string? framework,
+        string? logicaManual,
+        bool ejemplosActivos)
     {
         var raiz = Directory.GetCurrentDirectory();
         var solucion = BuscarArchivoDeSolucion(raiz);
@@ -95,7 +99,8 @@ public static class GeneradorDeApi
                 "add", Path.Combine(api, $"{api}.csproj"),
                 "reference", Path.Combine(logica, $"{logica}.csproj"));
 
-            GeneradorDeWebApi.Escribir(escritor, raiz, logica, api, entidad ?? "Producto", conEjemplos);
+            GeneradorDeWebApi.Escribir(
+                escritor, raiz, logica, api, entidad ?? "Producto", conEjemplos, ejemplosActivos);
 
             Ui.Linea();
             Ui.Ok($"Proyecto '{api}' agregado a la solución");

@@ -38,44 +38,107 @@ jobs:
           ucse ejemplos
           ucse ejemplos nunit
 
-      # Lo que genera la herramienta tiene que compilar y tener los tests en verde.
-      - name: Solución por capas (consola + lógica + tests)
+      # ------------------------------------------------------------------
+      # Modo por defecto: el código de ejemplo se genera comentado, así que
+      # la solución compila aunque el alumno borre cualquier parte.
+      # ------------------------------------------------------------------
+      - name: Ejemplos comentados · solución por capas
         working-directory: ${{ runner.temp }}
         run: |
-          ucse new DemoVentas --sin-git
+          ucse new DemoComentada --sin-git
+          cd DemoComentada
+          dotnet build
+
+      - name: Ejemplos comentados · están realmente comentados
+        working-directory: ${{ runner.temp }}/DemoComentada
+        run: |
+          set -e
+          for archivo in \
+            DemoComentada.LogicaServicio/Entidades/Producto.cs \
+            DemoComentada.LogicaServicio/Servicios/ProductoService.cs \
+            DemoComentada.LogicaServicio/Datos/ProductoRepositorio.cs \
+            DemoComentada.LogicaTest/ProductoServiceTest.cs
+          do
+            if grep -qE '^[^/[:space:]]' "$archivo"; then
+              echo "::error::$archivo tiene código sin comentar"; exit 1
+            fi
+            grep -q "EJEMPLO DE REFERENCIA" "$archivo" || { echo "::error::falta el encabezado en $archivo"; exit 1; }
+          done
+          echo "Los cuatro archivos de ejemplo están comentados y con encabezado."
+
+      - name: Ejemplos comentados · borrar la entidad no rompe nada
+        working-directory: ${{ runner.temp }}/DemoComentada
+        run: |
+          rm DemoComentada.LogicaServicio/Entidades/Producto.cs
+          dotnet build
+
+      - name: Ejemplos comentados · los comandos add-* compilan
+        working-directory: ${{ runner.temp }}/DemoComentada
+        run: |
+          ucse add-entidad DemoComentada.LogicaServicio/Entidades Cliente
+          ucse add-enum DemoComentada.LogicaServicio/Entidades EstadoPedido
+          ucse add-interfaz DemoComentada.LogicaServicio/Servicios Notificador
+          ucse add-abstracta DemoComentada.LogicaServicio/Entidades Documento
+          ucse add-repositorio DemoComentada.LogicaServicio/Datos Cliente
+          ucse add-servicio DemoComentada.LogicaServicio/Servicios Cliente
+          ucse add-test DemoComentada.LogicaTest ClienteService
+          ucse add-test DemoComentada.LogicaTest Documento
+          ucse add-clase DemoComentada.LogicaServicio Ayudante
+          dotnet build
+
+      - name: Ejemplos comentados · solución Web API
+        working-directory: ${{ runner.temp }}
+        run: |
+          ucse new-webapi DemoApiComentada --entidad Ticket --sin-git
+          cd DemoApiComentada
+          dotnet build
+
+      - name: Ejemplos comentados · qué devuelve dotnet test (informativo)
+        working-directory: ${{ runner.temp }}/DemoComentada
+        continue-on-error: true
+        run: |
+          set +e
+          dotnet test
+          echo "código de salida de dotnet test sin tests activos: $?"
+
+      # ------------------------------------------------------------------
+      # Modo --ejemplos-activos: el código queda sin comentar, compila y los
+      # tests corren. Es la verificación de que el ejemplo en sí es correcto.
+      # ------------------------------------------------------------------
+      - name: Ejemplos activos · solución por capas
+        working-directory: ${{ runner.temp }}
+        run: |
+          ucse new DemoVentas --sin-git --ejemplos-activos
           cd DemoVentas
           dotnet build
           dotnet test
 
-      - name: Agregar archivos a la solución generada
+      - name: Ejemplos activos · comandos add-*
         working-directory: ${{ runner.temp }}/DemoVentas
         run: |
           ucse add-entidad DemoVentas.LogicaServicio/Entidades Cliente
-          ucse add-enum DemoVentas.LogicaServicio/Entidades EstadoPedido
-          ucse add-interfaz DemoVentas.LogicaServicio/Servicios Notificador
-          ucse add-abstracta DemoVentas.LogicaServicio/Entidades Documento
-          ucse add-repositorio DemoVentas.LogicaServicio/Datos Cliente
-          ucse add-servicio DemoVentas.LogicaServicio/Servicios Cliente
-          ucse add-test DemoVentas.LogicaTest ClienteService
-          ucse add-clase DemoVentas.LogicaServicio Ayudante
+          ucse add-repositorio DemoVentas.LogicaServicio/Datos Cliente --ejemplos-activos
+          ucse add-servicio DemoVentas.LogicaServicio/Servicios Cliente --ejemplos-activos
+          ucse add-test DemoVentas.LogicaTest ClienteService --ejemplos-activos
           dotnet build
           dotnet test
 
-      - name: Sumar la Web API a la solución generada
+      - name: Ejemplos activos · sumar la Web API
         working-directory: ${{ runner.temp }}/DemoVentas
         run: |
-          ucse add-api --entidad Cliente
-          ucse add-controller DemoVentas.Api Producto
+          ucse add-api --entidad Cliente --ejemplos-activos
+          ucse add-controller DemoVentas.Api Producto --ejemplos-activos
           dotnet build
 
-      - name: Solución con Web API desde cero
+      - name: Ejemplos activos · solución Web API desde cero
         working-directory: ${{ runner.temp }}
         run: |
-          ucse new-webapi DemoApi --entidad Ticket --con-consola --sin-git
+          ucse new-webapi DemoApi --entidad Ticket --con-consola --sin-git --ejemplos-activos
           cd DemoApi
           dotnet build
           dotnet test
 
+      # ------------------------------------------------------------------
       - name: Estructura sin código de ejemplo
         working-directory: ${{ runner.temp }}
         run: |

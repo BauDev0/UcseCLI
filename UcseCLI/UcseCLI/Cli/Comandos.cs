@@ -61,6 +61,7 @@ public static class Comandos
         var entidad = OpcionEntidad();
         var framework = OpcionFramework();
         var sinEjemplos = OpcionSinEjemplos();
+        var ejemplosActivos = OpcionEjemplosActivos();
         var sinGit = OpcionSinGit();
 
         var sinConsola = new Option<bool>("--sin-consola")
@@ -77,6 +78,7 @@ public static class Comandos
         comando.Options.Add(entidad);
         comando.Options.Add(framework);
         comando.Options.Add(sinEjemplos);
+        comando.Options.Add(ejemplosActivos);
         comando.Options.Add(sinConsola);
         comando.Options.Add(conApi);
         comando.Options.Add(sinGit);
@@ -89,6 +91,7 @@ public static class Comandos
                 Entidad = resultado.GetValue(entidad) ?? "Producto",
                 Framework = resultado.GetValue(framework),
                 ConEjemplos = !resultado.GetValue(sinEjemplos),
+                EjemplosActivos = resultado.GetValue(ejemplosActivos),
                 ConConsola = !resultado.GetValue(sinConsola),
                 ConApi = resultado.GetValue(conApi),
                 ConGit = !resultado.GetValue(sinGit)
@@ -112,6 +115,7 @@ public static class Comandos
         var entidad = OpcionEntidad();
         var framework = OpcionFramework();
         var sinEjemplos = OpcionSinEjemplos();
+        var ejemplosActivos = OpcionEjemplosActivos();
         var sinGit = OpcionSinGit();
 
         var conConsola = new Option<bool>("--con-consola")
@@ -123,6 +127,7 @@ public static class Comandos
         comando.Options.Add(entidad);
         comando.Options.Add(framework);
         comando.Options.Add(sinEjemplos);
+        comando.Options.Add(ejemplosActivos);
         comando.Options.Add(conConsola);
         comando.Options.Add(sinGit);
 
@@ -134,6 +139,7 @@ public static class Comandos
                 Entidad = resultado.GetValue(entidad) ?? "Producto",
                 Framework = resultado.GetValue(framework),
                 ConEjemplos = !resultado.GetValue(sinEjemplos),
+                EjemplosActivos = resultado.GetValue(ejemplosActivos),
                 ConConsola = resultado.GetValue(conConsola),
                 ConApi = true,
                 ConGit = !resultado.GetValue(sinGit)
@@ -190,17 +196,20 @@ public static class Comandos
 
         var logica = OpcionLogica();
         var framework = OpcionFramework();
+        var ejemplosActivos = OpcionEjemplosActivos();
 
         comando.Options.Add(entidad);
         comando.Options.Add(logica);
         comando.Options.Add(framework);
+        comando.Options.Add(ejemplosActivos);
 
         comando.SetAction(resultado =>
         {
             return GeneradorDeApi.Agregar(
                 resultado.GetValue(entidad),
                 resultado.GetValue(framework),
-                resultado.GetValue(logica));
+                resultado.GetValue(logica),
+                resultado.GetValue(ejemplosActivos));
         });
 
         return comando;
@@ -258,17 +267,20 @@ public static class Comandos
         };
 
         var espacioDeNombres = OpcionNamespace();
+        var ejemplosActivos = OpcionEjemplosActivos();
 
         comando.Arguments.Add(ruta);
         comando.Arguments.Add(entidad);
         comando.Options.Add(espacioDeNombres);
+        comando.Options.Add(ejemplosActivos);
 
         comando.SetAction(resultado =>
         {
             return GeneradorDeArchivos.CrearServicio(
                 resultado.GetValue(ruta) ?? string.Empty,
                 resultado.GetValue(entidad) ?? string.Empty,
-                resultado.GetValue(espacioDeNombres));
+                resultado.GetValue(espacioDeNombres),
+                resultado.GetValue(ejemplosActivos));
         });
 
         return comando;
@@ -291,17 +303,20 @@ public static class Comandos
         };
 
         var espacioDeNombres = OpcionNamespace();
+        var ejemplosActivos = OpcionEjemplosActivos();
 
         comando.Arguments.Add(ruta);
         comando.Arguments.Add(entidad);
         comando.Options.Add(espacioDeNombres);
+        comando.Options.Add(ejemplosActivos);
 
         comando.SetAction(resultado =>
         {
             return GeneradorDeArchivos.CrearRepositorio(
                 resultado.GetValue(ruta) ?? string.Empty,
                 resultado.GetValue(entidad) ?? string.Empty,
-                resultado.GetValue(espacioDeNombres));
+                resultado.GetValue(espacioDeNombres),
+                resultado.GetValue(ejemplosActivos));
         });
 
         return comando;
@@ -324,17 +339,20 @@ public static class Comandos
         };
 
         var espacioDeNombres = OpcionNamespace();
+        var ejemplosActivos = OpcionEjemplosActivos();
 
         comando.Arguments.Add(ruta);
         comando.Arguments.Add(clase);
         comando.Options.Add(espacioDeNombres);
+        comando.Options.Add(ejemplosActivos);
 
         comando.SetAction(resultado =>
         {
             return GeneradorDeArchivos.CrearTest(
                 resultado.GetValue(ruta) ?? string.Empty,
                 resultado.GetValue(clase) ?? string.Empty,
-                resultado.GetValue(espacioDeNombres));
+                resultado.GetValue(espacioDeNombres),
+                resultado.GetValue(ejemplosActivos));
         });
 
         return comando;
@@ -357,17 +375,20 @@ public static class Comandos
         };
 
         var logica = OpcionLogica();
+        var ejemplosActivos = OpcionEjemplosActivos();
 
         comando.Arguments.Add(proyecto);
         comando.Arguments.Add(entidad);
         comando.Options.Add(logica);
+        comando.Options.Add(ejemplosActivos);
 
         comando.SetAction(resultado =>
         {
             return GeneradorDeArchivos.CrearControlador(
                 resultado.GetValue(proyecto) ?? string.Empty,
                 resultado.GetValue(entidad) ?? string.Empty,
-                resultado.GetValue(logica));
+                resultado.GetValue(logica),
+                resultado.GetValue(ejemplosActivos));
         });
 
         return comando;
@@ -457,6 +478,12 @@ public static class Comandos
         new("--logica")
         {
             Description = "Nombre del proyecto de lógica (si no se puede detectar automáticamente)"
+        };
+
+    private static Option<bool> OpcionEjemplosActivos() =>
+        new("--ejemplos-activos")
+        {
+            Description = "Generar el código de ejemplo sin comentar (compila y los tests corren)"
         };
 
     private static Option<bool> OpcionSinEjemplos() =>

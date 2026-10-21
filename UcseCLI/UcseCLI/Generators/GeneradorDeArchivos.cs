@@ -92,7 +92,11 @@ public static class GeneradorDeArchivos
     }
 
     /// <summary>Servicio de ejemplo con las operaciones básicas sobre una entidad.</summary>
-    public static int CrearServicio(string rutaRelativa, string entidadPedida, string? namespaceManual)
+    public static int CrearServicio(
+        string rutaRelativa,
+        string entidadPedida,
+        string? namespaceManual,
+        bool ejemplosActivos)
     {
         var preparado = Preparar(rutaRelativa, entidadPedida, namespaceManual);
 
@@ -106,17 +110,24 @@ public static class GeneradorDeArchivos
 
         escritor.Escribir(
             Path.Combine(destino, $"{entidad}Service.cs"),
-            GeneradorDeSolucion.Render(PlantillasDeCodigo.Servicio, entidad,
-                ("__NS__", Plantilla.Namespace(espacioDeNombres)),
-                ("__USING_ENTIDADES__", Usings(raizDelProyecto, "Entidades", espacioDeNombres)),
-                ("__USING_DATOS__", Usings(raizDelProyecto, "Datos", espacioDeNombres))),
+            Plantilla.SegunModo(
+                GeneradorDeSolucion.Render(PlantillasDeCodigo.Servicio, entidad,
+                    ("__NS__", Plantilla.Namespace(espacioDeNombres)),
+                    ("__USING_ENTIDADES__", Usings(raizDelProyecto, "Entidades", espacioDeNombres)),
+                    ("__USING_DATOS__", Usings(raizDelProyecto, "Datos", espacioDeNombres))),
+                $"Servicio de {entidad} - reglas de negocio (Unidades 2 y 5)",
+                ejemplosActivos),
             sobrescribir: false);
 
-        return InformarResultado(escritor, espacioDeNombres);
+        return InformarResultado(escritor, espacioDeNombres, !ejemplosActivos);
     }
 
     /// <summary>Repositorio JSON de ejemplo (capa de datos de la Unidad 5).</summary>
-    public static int CrearRepositorio(string rutaRelativa, string entidadPedida, string? namespaceManual)
+    public static int CrearRepositorio(
+        string rutaRelativa,
+        string entidadPedida,
+        string? namespaceManual,
+        bool ejemplosActivos)
     {
         var preparado = Preparar(rutaRelativa, entidadPedida, namespaceManual);
 
@@ -130,9 +141,12 @@ public static class GeneradorDeArchivos
 
         escritor.Escribir(
             Path.Combine(destino, $"{entidad}Repositorio.cs"),
-            GeneradorDeSolucion.Render(PlantillasDeCodigo.Repositorio, entidad,
-                ("__NS__", Plantilla.Namespace(espacioDeNombres)),
-                ("__USING_ENTIDADES__", Usings(raizDelProyecto, "Entidades", espacioDeNombres))),
+            Plantilla.SegunModo(
+                GeneradorDeSolucion.Render(PlantillasDeCodigo.Repositorio, entidad,
+                    ("__NS__", Plantilla.Namespace(espacioDeNombres)),
+                    ("__USING_ENTIDADES__", Usings(raizDelProyecto, "Entidades", espacioDeNombres))),
+                $"Repositorio de {entidad} - persistencia en JSON (Unidad 5)",
+                ejemplosActivos),
             sobrescribir: false);
 
         var contexto = ProyectoCs.ObtenerContexto(destino);
@@ -147,14 +161,18 @@ public static class GeneradorDeArchivos
             Ui.Ok($"Agregado {Paquetes.NewtonsoftJson} a {Path.GetFileName(contexto.RutaCsproj)}");
         }
 
-        return InformarResultado(escritor, espacioDeNombres);
+        return InformarResultado(escritor, espacioDeNombres, !ejemplosActivos);
     }
 
     /// <summary>
     /// Tests NUnit. Si el nombre termina en "Service" genera la batería completa
     /// de ejemplo sobre un archivo temporal; si no, un TestFixture con un test guía.
     /// </summary>
-    public static int CrearTest(string rutaRelativa, string clasePedida, string? namespaceManual)
+    public static int CrearTest(
+        string rutaRelativa,
+        string clasePedida,
+        string? namespaceManual,
+        bool ejemplosActivos)
     {
         var destino = SafePath.ResolverDentroDelActual(rutaRelativa);
 
@@ -192,17 +210,22 @@ public static class GeneradorDeArchivos
 
             escritor.Escribir(
                 Path.Combine(destino, $"{clase}Test.cs"),
-                GeneradorDeSolucion.Render(PlantillasDeCodigo.TestDeServicio, entidad,
-                    ("__NS__", Plantilla.Namespace(espacioDeNombres)),
-                    ("__USING_ENTIDADES__", Plantilla.Usings(SubNamespace(logica, "Entidades"))),
-                    ("__USING_SERVICIOS__", Plantilla.Usings(SubNamespace(logica, "Servicios"))),
-                    ("__USING_DATOS__", Plantilla.Usings(SubNamespace(logica, "Datos")))),
+                Plantilla.SegunModo(
+                    GeneradorDeSolucion.Render(PlantillasDeCodigo.TestDeServicio, entidad,
+                        ("__NS__", Plantilla.Namespace(espacioDeNombres)),
+                        ("__USING_ENTIDADES__", Plantilla.Usings(SubNamespace(logica, "Entidades"))),
+                        ("__USING_SERVICIOS__", Plantilla.Usings(SubNamespace(logica, "Servicios"))),
+                        ("__USING_DATOS__", Plantilla.Usings(SubNamespace(logica, "Datos")))),
+                    $"Tests de {clase} (Unidad 4)",
+                    ejemplosActivos),
                 sobrescribir: false);
 
             if (logica is null)
             {
                 Ui.Aviso("No se detectó el proyecto de lógica: revisá las directivas using del test.");
             }
+
+            return InformarResultado(escritor, espacioDeNombres, !ejemplosActivos);
         }
         else
         {
@@ -213,9 +236,11 @@ public static class GeneradorDeArchivos
                 GeneradorDeSolucion.Render(PlantillasDeCodigo.TestDeClase, clase,
                     ("__NOMBRE__", clase),
                     ("__NS__", Plantilla.Namespace(espacioDeNombres)),
-                    ("__USINGS__", Plantilla.Usings(
+                    // Van comentados: esas carpetas pueden no tener todavía
+                    // código activo, y un using a un namespace inexistente no compila.
+                    ("__USINGS__", Plantilla.ComentarBloque(Plantilla.Usings(
                         SubNamespace(logica, "Entidades"),
-                        SubNamespace(logica, "Servicios")))),
+                        SubNamespace(logica, "Servicios"))))),
                 sobrescribir: false);
         }
 
@@ -223,7 +248,11 @@ public static class GeneradorDeArchivos
     }
 
     /// <summary>Controller REST con sus DTOs y mapper dentro de un proyecto Web API.</summary>
-    public static int CrearControlador(string rutaProyectoApi, string entidadPedida, string? logicaManual)
+    public static int CrearControlador(
+        string rutaProyectoApi,
+        string entidadPedida,
+        string? logicaManual,
+        bool ejemplosActivos)
     {
         var carpetaApi = SafePath.ResolverDentroDelActual(rutaProyectoApi);
 
@@ -270,33 +299,45 @@ public static class GeneradorDeArchivos
 
         escritor.Escribir(
             Path.Combine(carpetaApi, "Controllers", $"{entidad}Controller.cs"),
-            GeneradorDeSolucion.Render(PlantillasWebApi.Controlador, entidad,
-                ("__NS__", Plantilla.Namespace(nsControllers)),
-                ("__USING_DTOS__", Plantilla.Usings(nsDtos)),
-                ("__USING_ENTIDADES__", Plantilla.Usings($"{logica}.Entidades")),
-                ("__USING_SERVICIOS__", Plantilla.Usings($"{logica}.Servicios"))),
+            Plantilla.SegunModo(
+                GeneradorDeSolucion.Render(PlantillasWebApi.Controlador, entidad,
+                    ("__NS__", Plantilla.Namespace(nsControllers)),
+                    ("__USING_DTOS__", Plantilla.Usings(nsDtos)),
+                    ("__USING_ENTIDADES__", Plantilla.Usings($"{logica}.Entidades")),
+                    ("__USING_SERVICIOS__", Plantilla.Usings($"{logica}.Servicios"))),
+                $"Controller REST de {entidad} (Unidad 6)",
+                ejemplosActivos),
             sobrescribir: false);
 
         escritor.Escribir(
             Path.Combine(carpetaApi, "DTOs", $"{entidad}Request.cs"),
-            GeneradorDeSolucion.Render(PlantillasWebApi.DtoRequest, entidad,
-                ("__NS__", Plantilla.Namespace(nsDtos))),
+            Plantilla.SegunModo(
+                GeneradorDeSolucion.Render(PlantillasWebApi.DtoRequest, entidad,
+                    ("__NS__", Plantilla.Namespace(nsDtos))),
+                $"DTO de entrada de {entidad} (Unidad 6)",
+                ejemplosActivos),
             sobrescribir: false);
 
         escritor.Escribir(
             Path.Combine(carpetaApi, "DTOs", $"{entidad}Response.cs"),
-            GeneradorDeSolucion.Render(PlantillasWebApi.DtoResponse, entidad,
-                ("__NS__", Plantilla.Namespace(nsDtos))),
+            Plantilla.SegunModo(
+                GeneradorDeSolucion.Render(PlantillasWebApi.DtoResponse, entidad,
+                    ("__NS__", Plantilla.Namespace(nsDtos))),
+                $"DTO de salida de {entidad} (Unidad 6)",
+                ejemplosActivos),
             sobrescribir: false);
 
         escritor.Escribir(
             Path.Combine(carpetaApi, "DTOs", $"{entidad}Mapper.cs"),
-            GeneradorDeSolucion.Render(PlantillasWebApi.Mapper, entidad,
-                ("__NS__", Plantilla.Namespace(nsDtos)),
-                ("__USING_ENTIDADES__", Plantilla.Usings($"{logica}.Entidades"))),
+            Plantilla.SegunModo(
+                GeneradorDeSolucion.Render(PlantillasWebApi.Mapper, entidad,
+                    ("__NS__", Plantilla.Namespace(nsDtos)),
+                    ("__USING_ENTIDADES__", Plantilla.Usings($"{logica}.Entidades"))),
+                $"Mapeo entre {entidad} y sus DTOs (Unidad 6)",
+                ejemplosActivos),
             sobrescribir: false);
 
-        var resultado = InformarResultado(escritor, nsDtos);
+        var resultado = InformarResultado(escritor, nsDtos, !ejemplosActivos);
 
         Ui.Linea();
         Ui.Nota($"Falta registrar el servicio en Program.cs: builder.Services.AddSingleton<{entidad}Service>();");
@@ -400,7 +441,10 @@ public static class GeneradorDeArchivos
     private static bool EsNamespaceValido(string espacioDeNombres) =>
         espacioDeNombres.Split('.').All(Naming.EsIdentificadorValido);
 
-    private static int InformarResultado(EscritorDeArchivos escritor, string? espacioDeNombres)
+    private static int InformarResultado(
+        EscritorDeArchivos escritor,
+        string? espacioDeNombres,
+        bool comentado = false)
     {
         foreach (var creado in escritor.Creados)
         {
@@ -420,6 +464,11 @@ public static class GeneradorDeArchivos
         if (!string.IsNullOrWhiteSpace(espacioDeNombres))
         {
             Ui.Nota($"namespace {espacioDeNombres}");
+        }
+
+        if (comentado)
+        {
+            Ui.AvisoArchivoComentado();
         }
 
         return 0;

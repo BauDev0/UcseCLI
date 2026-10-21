@@ -16,6 +16,12 @@ public sealed record OpcionesDeSolucion
 
     public bool ConEjemplos { get; init; } = true;
 
+    /// <summary>
+    /// Si es false (lo predeterminado), el código de ejemplo se genera comentado
+    /// para que borrar cualquier parte no deje al resto del proyecto con errores.
+    /// </summary>
+    public bool EjemplosActivos { get; init; }
+
     public bool ConConsola { get; init; } = true;
 
     public bool ConApi { get; init; }
@@ -109,18 +115,23 @@ public static class GeneradorDeSolucion
 
             if (opciones.ConEjemplos)
             {
-                Ui.Paso($"Generando código de ejemplo para la entidad {entidad}");
-                EscribirEjemplosDeLogica(escritor, raiz, logica, test, entidad);
+                Ui.Paso(opciones.EjemplosActivos
+                    ? $"Generando código de ejemplo para la entidad {entidad}"
+                    : $"Generando código de ejemplo (comentado) para la entidad {entidad}");
+
+                EscribirEjemplosDeLogica(escritor, raiz, logica, test, entidad, opciones.EjemplosActivos);
 
                 if (opciones.ConConsola)
                 {
-                    EscribirProgramaDeConsola(escritor, raiz, nombre, logica, consola, entidad);
+                    EscribirProgramaDeConsola(
+                        escritor, raiz, nombre, logica, consola, entidad, opciones.EjemplosActivos);
                 }
             }
 
             if (opciones.ConApi)
             {
-                GeneradorDeWebApi.Escribir(escritor, raiz, logica, api, entidad, opciones.ConEjemplos);
+                GeneradorDeWebApi.Escribir(
+                    escritor, raiz, logica, api, entidad, opciones.ConEjemplos, opciones.EjemplosActivos);
             }
 
             EscribirArchivosDeRepositorio(escritor, raiz, opciones, logica, test, consola, api, entidad);
@@ -265,7 +276,8 @@ public static class GeneradorDeSolucion
         string raiz,
         string logica,
         string test,
-        string entidad)
+        string entidad,
+        bool activos)
     {
         var nsEntidades = $"{logica}.Entidades";
         var nsServicios = $"{logica}.Servicios";
@@ -273,29 +285,41 @@ public static class GeneradorDeSolucion
 
         escritor.Escribir(
             Path.Combine(raiz, logica, "Entidades", $"{entidad}.cs"),
-            Render(PlantillasDeCodigo.Entidad, entidad,
-                ("__NS__", Plantilla.Namespace(nsEntidades))));
+            Plantilla.SegunModo(
+                Render(PlantillasDeCodigo.Entidad, entidad,
+                    ("__NS__", Plantilla.Namespace(nsEntidades))),
+                $"Entidad {entidad} (Unidad 2)",
+                activos));
 
         escritor.Escribir(
             Path.Combine(raiz, logica, "Datos", $"{entidad}Repositorio.cs"),
-            Render(PlantillasDeCodigo.Repositorio, entidad,
-                ("__NS__", Plantilla.Namespace(nsDatos)),
-                ("__USING_ENTIDADES__", Plantilla.Usings(nsEntidades))));
+            Plantilla.SegunModo(
+                Render(PlantillasDeCodigo.Repositorio, entidad,
+                    ("__NS__", Plantilla.Namespace(nsDatos)),
+                    ("__USING_ENTIDADES__", Plantilla.Usings(nsEntidades))),
+                $"Repositorio de {entidad} - persistencia en JSON (Unidad 5)",
+                activos));
 
         escritor.Escribir(
             Path.Combine(raiz, logica, "Servicios", $"{entidad}Service.cs"),
-            Render(PlantillasDeCodigo.Servicio, entidad,
-                ("__NS__", Plantilla.Namespace(nsServicios)),
-                ("__USING_ENTIDADES__", Plantilla.Usings(nsEntidades)),
-                ("__USING_DATOS__", Plantilla.Usings(nsDatos))));
+            Plantilla.SegunModo(
+                Render(PlantillasDeCodigo.Servicio, entidad,
+                    ("__NS__", Plantilla.Namespace(nsServicios)),
+                    ("__USING_ENTIDADES__", Plantilla.Usings(nsEntidades)),
+                    ("__USING_DATOS__", Plantilla.Usings(nsDatos))),
+                $"Servicio de {entidad} - reglas de negocio (Unidades 2 y 5)",
+                activos));
 
         escritor.Escribir(
             Path.Combine(raiz, test, $"{entidad}ServiceTest.cs"),
-            Render(PlantillasDeCodigo.TestDeServicio, entidad,
-                ("__NS__", Plantilla.Namespace(test)),
-                ("__USING_ENTIDADES__", Plantilla.Usings(nsEntidades)),
-                ("__USING_SERVICIOS__", Plantilla.Usings(nsServicios)),
-                ("__USING_DATOS__", Plantilla.Usings(nsDatos))));
+            Plantilla.SegunModo(
+                Render(PlantillasDeCodigo.TestDeServicio, entidad,
+                    ("__NS__", Plantilla.Namespace(test)),
+                    ("__USING_ENTIDADES__", Plantilla.Usings(nsEntidades)),
+                    ("__USING_SERVICIOS__", Plantilla.Usings(nsServicios)),
+                    ("__USING_DATOS__", Plantilla.Usings(nsDatos))),
+                $"Tests de {entidad}Service (Unidad 4)",
+                activos));
     }
 
     private static void EscribirProgramaDeConsola(
@@ -304,14 +328,27 @@ public static class GeneradorDeSolucion
         string nombre,
         string logica,
         string consola,
-        string entidad)
+        string entidad,
+        bool activos)
     {
-        escritor.Escribir(
-            Path.Combine(raiz, consola, "Program.cs"),
-            Render(PlantillasProyecto.ProgramaDeConsola, entidad,
-                ("__PROYECTO__", nombre),
-                ("__USING_ENTIDADES__", Plantilla.Usings($"{logica}.Entidades")),
-                ("__USING_SERVICIOS__", Plantilla.Usings($"{logica}.Servicios"))));
+        var programa = Render(PlantillasProyecto.ProgramaDeConsola, entidad,
+            ("__PROYECTO__", nombre),
+            ("__USING_ENTIDADES__", Plantilla.Usings($"{logica}.Entidades")),
+            ("__USING_SERVICIOS__", Plantilla.Usings($"{logica}.Servicios")));
+
+        // Un proyecto de consola necesita punto de entrada: si el ejemplo va
+        // comentado, queda una línea viva al final (y el ejemplo, arriba, para
+        // que al descomentarlo los using queden antes de cualquier sentencia).
+        var contenido = activos
+            ? programa
+            : Plantilla.Comentar(
+                  programa,
+                  "Aplicación de consola - capa de presentación (Unidad 2)",
+                  "Al descomentarlo, borrá la línea Console.WriteLine del final del archivo.")
+              + Environment.NewLine + Environment.NewLine
+              + PlantillasProyecto.ProgramaDeConsolaEnBlanco;
+
+        escritor.Escribir(Path.Combine(raiz, consola, "Program.cs"), contenido);
     }
 
     private static void EscribirArchivosDeRepositorio(
@@ -352,8 +389,33 @@ public static class GeneradorDeSolucion
                 ("__PROYECTO__", opciones.Nombre),
                 ("__ESTRUCTURA__", estructura),
                 ("__TABLA_PROYECTOS__", string.Join(Environment.NewLine, filas)),
-                ("__COMANDOS_EJECUCION__", string.Concat(comandos))),
+                ("__COMANDOS_EJECUCION__", string.Concat(comandos)),
+                ("__NOTA_EJEMPLOS__", NotaDeEjemplos(opciones, entidad))),
             sobrescribir: false);
+    }
+
+    /// <summary>Nota del README sobre el código de ejemplo generado.</summary>
+    private static string NotaDeEjemplos(OpcionesDeSolucion opciones, string entidad)
+    {
+        if (!opciones.ConEjemplos)
+        {
+            return "> La estructura se generó sin código de ejemplo.";
+        }
+
+        if (opciones.EjemplosActivos)
+        {
+            return $"> El código de ejemplo (`{entidad}`) está para tomarlo como referencia:" +
+                   Environment.NewLine +
+                   "> reemplazalo por el modelo que pide el enunciado.";
+        }
+
+        return $"> El código de ejemplo (`{entidad}`) se generó **comentado**, así se puede borrar" +
+               Environment.NewLine +
+               "> sin que el resto del proyecto quede con errores. Para verlo funcionando," +
+               Environment.NewLine +
+               "> seleccioná el bloque y descomentalo (`Ctrl+K Ctrl+U` en VS Code)." +
+               Environment.NewLine +
+               "> Mientras siga comentado, `dotnet test` no encuentra tests para correr.";
     }
 
     /// <summary>Fila de la tabla del README con la capa y la unidad de cada proyecto.</summary>
@@ -439,7 +501,7 @@ public static class GeneradorDeSolucion
 
         if (opciones.ConEjemplos)
         {
-            Ui.AvisoEjemplos();
+            Ui.AvisoEjemplos(opciones.EjemplosActivos);
         }
     }
 

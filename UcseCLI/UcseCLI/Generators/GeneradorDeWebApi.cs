@@ -15,7 +15,8 @@ public static class GeneradorDeWebApi
         string logica,
         string api,
         string entidad,
-        bool conEjemplos)
+        bool conEjemplos,
+        bool ejemplosActivos)
     {
         var carpetaApi = Path.Combine(raiz, api);
         var nsEntidades = $"{logica}.Entidades";
@@ -28,39 +29,56 @@ public static class GeneradorDeWebApi
         escritor.Escribir(
             Path.Combine(carpetaApi, "Program.cs"),
             GeneradorDeSolucion.Render(ElegirPlantillaDeProgram(carpetaApi, api), entidad,
-                ("__USING_SERVICIOS__", conEjemplos ? Plantilla.Usings(nsServicios) : string.Empty),
-                ("__REGISTRO_SERVICIOS__", RegistroDeServicios(entidad, conEjemplos))));
+                ("__USING_SERVICIOS__", conEjemplos && ejemplosActivos
+                    ? Plantilla.Usings(nsServicios)
+                    : string.Empty),
+                ("__REGISTRO_SERVICIOS__",
+                    RegistroDeServicios(entidad, nsServicios, conEjemplos, ejemplosActivos))));
 
         if (!conEjemplos)
         {
             return;
         }
 
-        Ui.Paso($"Generando controller y DTOs de {entidad}");
+        Ui.Paso(ejemplosActivos
+            ? $"Generando controller y DTOs de {entidad}"
+            : $"Generando controller y DTOs de {entidad} (comentados)");
 
         escritor.Escribir(
             Path.Combine(carpetaApi, "Controllers", $"{entidad}Controller.cs"),
-            GeneradorDeSolucion.Render(PlantillasWebApi.Controlador, entidad,
-                ("__NS__", Plantilla.Namespace(nsControllers)),
-                ("__USING_DTOS__", Plantilla.Usings(nsDtos)),
-                ("__USING_ENTIDADES__", Plantilla.Usings(nsEntidades)),
-                ("__USING_SERVICIOS__", Plantilla.Usings(nsServicios))));
+            Plantilla.SegunModo(
+                GeneradorDeSolucion.Render(PlantillasWebApi.Controlador, entidad,
+                    ("__NS__", Plantilla.Namespace(nsControllers)),
+                    ("__USING_DTOS__", Plantilla.Usings(nsDtos)),
+                    ("__USING_ENTIDADES__", Plantilla.Usings(nsEntidades)),
+                    ("__USING_SERVICIOS__", Plantilla.Usings(nsServicios))),
+                $"Controller REST de {entidad} (Unidad 6)",
+                ejemplosActivos));
 
         escritor.Escribir(
             Path.Combine(carpetaApi, "DTOs", $"{entidad}Request.cs"),
-            GeneradorDeSolucion.Render(PlantillasWebApi.DtoRequest, entidad,
-                ("__NS__", Plantilla.Namespace(nsDtos))));
+            Plantilla.SegunModo(
+                GeneradorDeSolucion.Render(PlantillasWebApi.DtoRequest, entidad,
+                    ("__NS__", Plantilla.Namespace(nsDtos))),
+                $"DTO de entrada de {entidad} (Unidad 6)",
+                ejemplosActivos));
 
         escritor.Escribir(
             Path.Combine(carpetaApi, "DTOs", $"{entidad}Response.cs"),
-            GeneradorDeSolucion.Render(PlantillasWebApi.DtoResponse, entidad,
-                ("__NS__", Plantilla.Namespace(nsDtos))));
+            Plantilla.SegunModo(
+                GeneradorDeSolucion.Render(PlantillasWebApi.DtoResponse, entidad,
+                    ("__NS__", Plantilla.Namespace(nsDtos))),
+                $"DTO de salida de {entidad} (Unidad 6)",
+                ejemplosActivos));
 
         escritor.Escribir(
             Path.Combine(carpetaApi, "DTOs", $"{entidad}Mapper.cs"),
-            GeneradorDeSolucion.Render(PlantillasWebApi.Mapper, entidad,
-                ("__NS__", Plantilla.Namespace(nsDtos)),
-                ("__USING_ENTIDADES__", Plantilla.Usings(nsEntidades))));
+            Plantilla.SegunModo(
+                GeneradorDeSolucion.Render(PlantillasWebApi.Mapper, entidad,
+                    ("__NS__", Plantilla.Namespace(nsDtos)),
+                    ("__USING_ENTIDADES__", Plantilla.Usings(nsEntidades))),
+                $"Mapeo entre {entidad} y sus DTOs (Unidad 6)",
+                ejemplosActivos));
 
         // La plantilla de dotnet deja un .http con el endpoint de ejemplo que se borró.
         escritor.Escribir(
@@ -96,11 +114,31 @@ public static class GeneradorDeWebApi
         return PlantillasWebApi.ProgramaSinOpenApi;
     }
 
-    private static string RegistroDeServicios(string entidad, bool conEjemplos) =>
-        conEjemplos
-            ? "// Inyección de dependencias (Unidad 6 - sección 13)." + Environment.NewLine +
-              "// AddSingleton: una sola instancia para toda la aplicación." + Environment.NewLine +
-              $"builder.Services.AddSingleton<{entidad}Service>();"
-            : "// TODO: registrar acá los servicios de tu lógica." + Environment.NewLine +
-              "// builder.Services.AddSingleton<MiService>();";
+    private static string RegistroDeServicios(
+        string entidad,
+        string nsServicios,
+        bool conEjemplos,
+        bool ejemplosActivos)
+    {
+        if (!conEjemplos)
+        {
+            return "// TODO: registrar acá los servicios de tu lógica." + Environment.NewLine +
+                   "// builder.Services.AddSingleton<MiService>();";
+        }
+
+        var comentario =
+            "// Inyección de dependencias (Unidad 6 - sección 13)." + Environment.NewLine +
+            "// AddSingleton: una sola instancia para toda la aplicación." + Environment.NewLine;
+
+        if (ejemplosActivos)
+        {
+            return comentario + $"builder.Services.AddSingleton<{entidad}Service>();";
+        }
+
+        // Con el servicio de ejemplo comentado, su registro también va comentado:
+        // si no, el proyecto no compilaría.
+        return comentario +
+               $"// using {nsServicios};  (va arriba de todo, junto a los demás using)" + Environment.NewLine +
+               $"// builder.Services.AddSingleton<{entidad}Service>();";
+    }
 }

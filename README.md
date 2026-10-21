@@ -9,6 +9,10 @@ las convenciones del [repositorio oficial de la materia](https://github.com/UCSE
 > archivos base. **No resuelve el enunciado**: el análisis del dominio, las reglas de
 > negocio y los tests de esas reglas siguen siendo tu trabajo.
 
+> **El código de ejemplo se genera comentado.** Así podés borrar lo que no uses sin que el
+> resto del proyecto quede lleno de errores. Para verlo funcionando, descomentá el bloque
+> (`Ctrl+K Ctrl+U` en VS Code) o generá con `--ejemplos-activos`.
+
 ---
 
 ## Requisitos
@@ -85,6 +89,10 @@ SistemaVentas
     └── ProductoServiceTest.cs
 ```
 
+Los cuatro archivos de ejemplo (`Producto`, su repositorio, su servicio y sus tests) se
+generan **comentados**, con un encabezado que explica cómo activarlos. La solución compila
+desde el primer momento y borrar cualquiera de ellos no afecta al resto.
+
 Además de crear los proyectos, la herramienta:
 
 * crea la solución y agrega los tres proyectos;
@@ -101,6 +109,7 @@ Además de crear los proyectos, la herramienta:
 | `-f`, `--framework <tfm>` | Target framework, por ejemplo `net8.0` (por defecto, el del SDK) |
 | `--con-api` | Agrega además un proyecto Web API |
 | `--sin-consola` | Solo lógica y tests |
+| `--ejemplos-activos` | Genera el código de ejemplo sin comentar: compila y los tests corren |
 | `--sin-ejemplos` | Genera la estructura sin código de ejemplo |
 | `--sin-git` | No inicializa el repositorio |
 
@@ -266,6 +275,7 @@ ucse ejemplos json --guardar Notas/json.cs # lo guarda en un archivo
 # 1. Armar la solución con la lógica, los tests y la consola
 ucse new HelpDesk --entidad Ticket
 cd HelpDesk
+# el ejemplo viene comentado: borralo o descomentalo según te convenga
 
 # 2. Modelar el dominio del enunciado
 ucse add-enum HelpDesk.LogicaServicio/Entidades Prioridad Estado

@@ -111,6 +111,15 @@ public static class PlantillasProyecto
         }
         """;
 
+    /// <summary>
+    /// Punto de entrada mínimo para cuando el ejemplo va comentado: un proyecto
+    /// de consola sin ninguna sentencia no compila.
+    /// </summary>
+    public const string ProgramaDeConsolaEnBlanco =
+        """
+        Console.WriteLine("Proyecto de consola listo. Escribí acá la interacción con el usuario.");
+        """;
+
     /// <summary>README de la solución generada.</summary>
     public const string Readme =
         """
@@ -146,8 +155,7 @@ public static class PlantillasProyecto
         - **Datos/**: lectura y escritura de los archivos JSON (Unidad 5).
         - **Tests**: un test por comportamiento, con nombres `Metodo_Escenario_ResultadoEsperado`.
 
-        > El código de ejemplo (`__ENTIDAD__`) está para tomarlo como referencia:
-        > reemplazalo por el modelo que pide el enunciado.
+        __NOTA_EJEMPLOS__
         """;
 
     /// <summary>.gitignore para proyectos .NET (Unidad 3 - Git).</summary>

@@ -134,12 +134,34 @@ public static class Ui
     /// Recordatorio de que lo generado es código de ejemplo: la herramienta
     /// automatiza el armado del proyecto, no resuelve el enunciado.
     /// </summary>
-    public static void AvisoEjemplos()
+    public static void AvisoEjemplos(bool activos)
     {
         AnsiConsole.WriteLine();
+
+        if (activos)
+        {
+            AnsiConsole.MarkupLine(
+                "[yellow]El código de ejemplo quedó activo[/] [grey](compila y los tests corren).[/]");
+            AnsiConsole.MarkupLine(
+                "[grey]Al borrar la entidad de ejemplo vas a tener que borrar también lo que la usa.[/]");
+        }
+        else
+        {
+            AnsiConsole.MarkupLine(
+                "[yellow]El código de ejemplo se generó comentado[/] [grey](por eso 'dotnet test' no corre ningún test todavía).[/]");
+            AnsiConsole.MarkupLine(
+                "[grey]Así podés borrar lo que no uses sin que el resto quede con errores.[/]");
+            AnsiConsole.MarkupLine(
+                "[grey]Para verlo funcionando: descomentá el bloque (Ctrl+K Ctrl+U) o generá con --ejemplos-activos.[/]");
+        }
+
         AnsiConsole.MarkupLine(
-            "[yellow]Los archivos de ejemplo son una base para adaptar[/] [grey](entidad, servicio, repositorio y tests de muestra).[/]");
-        AnsiConsole.MarkupLine(
-            "[grey]El modelo y las reglas de negocio de tu enunciado los diseñás vos: borrá o reemplazá lo que no uses.[/]");
+            "[grey]El modelo y las reglas de negocio de tu enunciado los diseñás vos.[/]");
     }
+
+    /// <summary>Aviso corto para los comandos que generan un archivo comentado.</summary>
+    public static void AvisoArchivoComentado() =>
+        AnsiConsole.MarkupLine(
+            "[grey]Se generó comentado: descomentá el bloque (Ctrl+K Ctrl+U) o volvé a generarlo con --ejemplos-activos.[/]");
+
 }
