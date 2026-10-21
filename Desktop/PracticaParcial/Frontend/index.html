@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frontend</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Frontend</h1>
+        <p id="estado" class="estado"></p>
+    </header>
+
+    <main>
+        <section>
+            <h2>Nuevo registro</h2>
+
+            <!-- El form no recarga la página: el submit se maneja en app.js -->
+            <form id="formulario" class="tarjeta">
+                <label for="nombre">Nombre</label>
+                <input id="nombre" name="nombre" type="text" required maxlength="100">
+
+                <label for="precio">Precio</label>
+                <input id="precio" name="precio" type="number" min="0.01" step="0.01" required>
+
+                <button type="submit">Guardar</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>Listado</h2>
+            <button id="recargar" type="button">Recargar</button>
+
+            <table class="tabla">
+                <thead>
+                    <tr>
+                        <th>Id</th>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <!-- Las filas se generan desde JavaScript -->
+                <tbody id="cuerpo-tabla"></tbody>
+            </table>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

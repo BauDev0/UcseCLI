@@ -1,0 +1,28 @@
+@host = http://localhost:5000
+
+### Listar todos
+GET {{host}}/api/producto
+
+### Obtener por id
+GET {{host}}/api/producto/1
+
+### Crear
+POST {{host}}/api/producto
+Content-Type: application/json
+
+{
+  "nombre": "Ejemplo",
+  "precio": 100
+}
+
+### Actualizar
+PUT {{host}}/api/producto/1
+Content-Type: application/json
+
+{
+  "nombre": "Ejemplo modificado",
+  "precio": 150
+}
+
+### Eliminar
+DELETE {{host}}/api/producto/1
